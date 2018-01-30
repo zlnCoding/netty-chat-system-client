@@ -9,20 +9,20 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Scanner;
 
 /**
  * 描述:
- * 客户端1
+ * 客户端
  *
  * @auth zln
  * @create 2018-01-25 9:32
  */
 public class Client {
     static NioEventLoopGroup nioEventLoopGroup = null;
-    public static void main(String[] args) throws IOException, InterruptedException {
+
+    public static void main(String[] args) {
         try {
             //创建group
             nioEventLoopGroup = new NioEventLoopGroup();
@@ -46,27 +46,24 @@ public class Client {
             String[] conf = ipport.nextLine().split(":");
 
             ChannelFuture sync = bootstrap.connect(new InetSocketAddress(conf[0], Integer.parseInt(conf[1]))).sync();
-            System.out.println("客户端启动成功,绑定地址:"+conf[0]+",绑定端口"+conf[1]);
+            System.out.println("客户端启动成功,绑定地址:" + conf[0] + ",绑定端口" + conf[1]);
             //向服务端写数据
             while (true) {
                 Scanner scanner = new Scanner(System.in);
-
                 String s = scanner.nextLine();
                 if ("exit".equals(s)) break;
                 sync.channel().writeAndFlush(Unpooled.copiedBuffer(s.getBytes()));
             }
-            //异步监听关闭方法 阻塞方法
-            sync.channel().closeFuture().sync();
-            //关闭group
-            nioEventLoopGroup.shutdownGracefully();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }finally {
 
+            //异步监听关闭   阻塞方法
+            sync.channel().closeFuture().sync();
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
             //关闭group
-            nioEventLoopGroup.shutdownGracefully();
+            if (nioEventLoopGroup != null) {
+                nioEventLoopGroup.shutdownGracefully();
+            }
         }
 
 
